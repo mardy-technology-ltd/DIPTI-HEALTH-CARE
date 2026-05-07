@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-medical-teal: #0d9488;
+  --color-medical-blue: #0284c7;
+  --color-dark-slate: #0f172a;
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply font-sans;
+  }
+}
+
+/* Background Medical Grid */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(13, 148, 136, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(13, 148, 136, 0.05) 1px, transparent 1px);
+}
+
+/* Glowing Medical Orbs */
+.orb-teal {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.15) 0%, rgba(255,255,255,0) 70%);
+  top: -10%;
+  left: -10%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.orb-blue {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.15) 0%, rgba(255,255,255,0) 70%);
+  bottom: -10%;
+  right: -10%;
+  z-index: 0;
+  pointer-events: none;
+}
