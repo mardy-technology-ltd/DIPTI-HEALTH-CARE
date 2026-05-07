@@ -57,7 +57,7 @@ export default function BlogPage() {
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
 
         <div className="relative container mx-auto px-6 md:px-12 max-w-7xl text-center">
-          <Link href="/#blog" className="inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 text-sm font-medium mb-8 transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 text-sm font-medium mb-8 transition-colors">
             <ArrowLeftIcon /> Back to Home
           </Link>
 
