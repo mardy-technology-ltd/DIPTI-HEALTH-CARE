@@ -50,6 +50,7 @@ export type BlogPost = {
   color: string;
   icon: string;
   published: boolean;
+  image?: string; // optional image URL or base64
 };
 
 // ── Defaults ──────────────────────────────────────────────────

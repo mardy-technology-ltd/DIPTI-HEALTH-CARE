@@ -14,6 +14,7 @@ const blank = (): BlogPost => ({
   color: colorOptions[0].value,
   icon: iconOptions[0],
   published: true,
+  image: '',
 });
 
 export default function BlogAdminPage() {
@@ -120,8 +121,15 @@ export default function BlogAdminPage() {
                 <tr key={post.id} className="hover:bg-slate-800/30 transition">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{post.icon}</span>
-                      <span className="text-white font-semibold line-clamp-1 max-w-xs">{post.title || '(Untitled)'}</span>
+                      {post.image ? (
+                        <img src={post.image} alt="" className="w-10 h-10 rounded-lg object-cover border border-slate-700" />
+                      ) : (
+                        <span className="text-2xl">{post.icon}</span>
+                      )}
+                      <div className="flex flex-col">
+                        <span className="text-white font-semibold line-clamp-1 max-w-xs">{post.title || '(Untitled)'}</span>
+                        {post.image && <span className="text-xs text-teal-400">📷 Image attached</span>}
+                      </div>
                     </div>
                   </td>
                   <td className="px-5 py-4">
@@ -200,6 +208,44 @@ export default function BlogAdminPage() {
                 className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 resize-none text-sm"
                 placeholder="Short description…"
               />
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">Featured Image</label>
+              <div className="space-y-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setEditing({ ...editing, image: reader.result as string });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="w-full bg-slate-800 border border-slate-700 text-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-600 file:text-white hover:file:bg-teal-500 file:cursor-pointer"
+                />
+                {editing.image && (
+                  <div className="relative group">
+                    <img
+                      src={editing.image}
+                      alt="Preview"
+                      className="w-full h-48 object-cover rounded-xl border-2 border-slate-700"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditing({ ...editing, image: '' })}
+                      className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 text-white p-2 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition"
+                    >
+                      🗑️ Remove
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
