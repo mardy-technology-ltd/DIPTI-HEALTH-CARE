@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   defaultHero, defaultExperiences, defaultStory, defaultContact, defaultBlogPosts,
-  HeroData, ExperienceItem, StoryData, ContactData, BlogPost,
+  HeroData, ExperienceItem, StoryData, ContactData, BlogPost, Message,
 } from './siteData';
 
 function lsGet<T>(key: string, def: T): T {
@@ -105,4 +105,62 @@ export function usePosts() {
     };
   }, []);
   return data;
+}
+
+// Messages Hook
+export function useMessages() {
+  const [data, setData] = useState<Message[]>([]);
+  
+  useEffect(() => {
+    const messages = lsGet('admin_messages', []);
+    setData(messages);
+
+    // Listen for storage events (cross-tab updates)
+    const handleStorage = () => {
+      const updated = lsGet('admin_messages', []);
+      setData(updated);
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // Listen for custom events (same-tab updates)
+    const handleUpdate = () => {
+      const updated = lsGet('admin_messages', []);
+      setData(updated);
+    };
+    window.addEventListener('admin_messages_updated', handleUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('admin_messages_updated', handleUpdate);
+    };
+  }, []);
+  
+  return data;
+}
+
+// Add a new message (called from contact form)
+export function addMessage(message: Omit<Message, 'id' | 'date' | 'read'>) {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const messages = lsGet<Message[]>('admin_messages', []);
+    const newMessage: Message = {
+      ...message,
+      id: Date.now(),
+      date: new Date().toISOString(),
+      read: false,
+    };
+    
+    const updated = [newMessage, ...messages];
+    localStorage.setItem('admin_messages', JSON.stringify(updated));
+    
+    // Dispatch custom event for same-tab updates
+    window.dispatchEvent(new Event('admin_messages_updated'));
+    
+    console.log('✅ Message saved:', newMessage);
+    return true;
+  } catch (e) {
+    console.error('❌ Failed to save message:', e);
+    return false;
+  }
 }

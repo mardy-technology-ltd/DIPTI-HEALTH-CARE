@@ -39,6 +39,24 @@ export type ContactData = {
   email: string;
   location: string;
 };
+export type Message = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  message: string;
+  date: string;
+  read: boolean;
+};
+export type Message = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  message: string;
+  date: string;
+  read: boolean;
+};
 
 export type BlogPost = {
   id: number;

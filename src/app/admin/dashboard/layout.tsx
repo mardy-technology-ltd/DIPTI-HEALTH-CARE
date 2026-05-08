@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AdminProvider, useAdmin } from '@/lib/adminContext';
+import { useMessages } from '@/lib/useSiteData';
 
 const NAV = [
   { id: 'overview',    label: 'Overview',    icon: '📊', href: '/admin/dashboard' },
@@ -11,6 +12,7 @@ const NAV = [
   { id: 'experience',  label: 'Experience',  icon: '🏅', href: '/admin/dashboard/experience' },
   { id: 'story',       label: 'My Story',    icon: '📖', href: '/admin/dashboard/story' },
   { id: 'blog',        label: 'Blog Posts',  icon: '📝', href: '/admin/dashboard/blog' },
+  { id: 'messages',    label: 'Messages',    icon: '💬', href: '/admin/dashboard/messages' },
   { id: 'contact',     label: 'Contact',     icon: '📞', href: '/admin/dashboard/contact' },
 ];
 
@@ -28,6 +30,8 @@ function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const messages = useMessages();
+  const unreadCount = messages.filter(m => !m.read).length;
 
   useEffect(() => {
     if (sessionStorage.getItem('admin_auth') !== '1') {
@@ -57,19 +61,34 @@ function Shell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
           {NAV.map((n) => {
             const active = pathname === n.href;
+            const showBadge = n.id === 'messages' && unreadCount > 0;
             return (
               <Link
                 key={n.id}
                 href={n.href}
                 title={n.label}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium relative ${
                   active
                     ? 'bg-teal-600/20 text-teal-400 border border-teal-500/30'
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 }`}
               >
                 <span className="text-lg shrink-0">{n.icon}</span>
-                {!collapsed && <span>{n.label}</span>}
+                {!collapsed && (
+                  <>
+                    <span>{n.label}</span>
+                    {showBadge && (
+                      <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </>
+                )}
+                {collapsed && showBadge && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
             );
           })}
