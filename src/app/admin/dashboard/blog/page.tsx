@@ -15,7 +15,41 @@ const blank = (): BlogPost => ({
   icon: iconOptions[0],
   published: true,
   image: '',
+  content: '',
+  images: [],
 });
+
+// ── Image Compression Helper ────────────────────────────────────
+const compressImage = (file: File, maxWidth = 800, quality = 0.7): Promise<string> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Resize if needed
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to base64 with compression
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressed);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+};
 
 export default function BlogAdminPage() {
   const { posts, setPosts } = useAdmin();
@@ -38,9 +72,11 @@ export default function BlogAdminPage() {
   };
 
   const upsert = (post: BlogPost) => {
+    console.log('📝 Upserting post:', { id: post.id, title: post.title, published: post.published });
     const next = items.find((p) => p.id === post.id)
       ? items.map((p) => (p.id === post.id ? post : p))
       : [post, ...items];
+    console.log('📊 New posts array length:', next.length);
     saveAll(next);
     setEditing(null);
   };
@@ -182,174 +218,239 @@ export default function BlogAdminPage() {
 
       {/* ── Edit / New Post Modal ── */}
       {editing && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-8 w-full max-w-2xl shadow-2xl space-y-4 my-4">
-            <h2 className="text-xl font-extrabold text-white">
-              {items.find((p) => p.id === editing.id) ? '✏️ Edit Post' : '+ New Post'}
-            </h2>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
-              <input
-                type="text"
-                value={editing.title}
-                onChange={(e) => setEditing({ ...editing, title: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
-                placeholder="Post title…"
-              />
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] my-4">
+            {/* Modal Header - Fixed */}
+            <div className="p-8 pb-4 border-b border-slate-800">
+              <h2 className="text-xl font-extrabold text-white">
+                {items.find((p) => p.id === editing.id) ? '✏️ Edit Post' : '+ New Post'}
+              </h2>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">Excerpt</label>
-              <textarea
-                rows={3}
-                value={editing.excerpt}
-                onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 resize-none text-sm"
-                placeholder="Short description…"
-              />
-            </div>
-
-            {/* Image Upload */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">Featured Image</label>
-              <div className="space-y-3">
+            {/* Modal Content - Scrollable */}
+            <div className="overflow-y-auto px-8 py-4 space-y-4 flex-1">
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setEditing({ ...editing, image: reader.result as string });
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                  className="w-full bg-slate-800 border border-slate-700 text-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-600 file:text-white hover:file:bg-teal-500 file:cursor-pointer"
+                  type="text"
+                  value={editing.title}
+                  onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
+                  placeholder="Post title…"
                 />
-                {editing.image && (
-                  <div className="relative group">
-                    <img
-                      src={editing.image}
-                      alt="Preview"
-                      className="w-full h-48 object-cover rounded-xl border-2 border-slate-700"
-                    />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Excerpt</label>
+                <textarea
+                  rows={3}
+                  value={editing.excerpt}
+                  onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 resize-none text-sm"
+                  placeholder="Short description…"
+                />
+              </div>
+
+              {/* Full Content / Details */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Content / Details</label>
+                <textarea
+                  rows={10}
+                  value={editing.content || ''}
+                  onChange={(e) => setEditing({ ...editing, content: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 resize-y text-sm"
+                  placeholder="Full blog post content with details, links, etc..."
+                />
+              </div>
+
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Featured Image</label>
+                <div className="space-y-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const compressed = await compressImage(file, 800, 0.7);
+                        setEditing({ ...editing, image: compressed });
+                      }
+                    }}
+                    className="w-full bg-slate-800 border border-slate-700 text-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-600 file:text-white hover:file:bg-teal-500 file:cursor-pointer"
+                  />
+                  {editing.image && (
+                    <div className="relative group">
+                      <img
+                        src={editing.image}
+                        alt="Preview"
+                        className="w-full h-48 object-cover rounded-xl border-2 border-slate-700"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEditing({ ...editing, image: '' })}
+                        className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 text-white p-2 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition"
+                      >
+                        🗑️ Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Additional Images */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Additional Images</label>
+                <div className="space-y-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length === 0) return;
+                      
+                      const compressedImages = await Promise.all(
+                        files.map((file) => compressImage(file, 600, 0.6))
+                      );
+
+                      const currentImages = editing.images || [];
+                      setEditing({ ...editing, images: [...currentImages, ...compressedImages] });
+                    }}
+                    className="w-full bg-slate-800 border border-slate-700 text-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-teal-600 file:text-white hover:file:bg-teal-500 file:cursor-pointer"
+                  />
+                  {editing.images && editing.images.length > 0 && (
+                    <div className="grid grid-cols-3 gap-3">
+                      {editing.images.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <img
+                            src={img}
+                            alt={`Additional ${idx + 1}`}
+                            className="w-full h-24 object-cover rounded-lg border-2 border-slate-700"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newImages = editing.images?.filter((_, i) => i !== idx) || [];
+                              setEditing({ ...editing, images: newImages });
+                            }}
+                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white p-1 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">Category</label>
+                  <select
+                    value={editing.category}
+                    onChange={(e) => setEditing({ ...editing, category: e.target.value })}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
+                  >
+                    {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">Read Time</label>
+                  <input
+                    type="text"
+                    value={editing.readTime}
+                    onChange={(e) => setEditing({ ...editing, readTime: e.target.value })}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
+                    placeholder="5 min read"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">Date</label>
+                  <input
+                    type="text"
+                    value={editing.date}
+                    onChange={(e) => setEditing({ ...editing, date: e.target.value })}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">Status</label>
+                  <select
+                    value={editing.published ? 'published' : 'draft'}
+                    onChange={(e) => setEditing({ ...editing, published: e.target.value === 'published' })}
+                    className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
+                  >
+                    <option value="published">✅ Published</option>
+                    <option value="draft">📄 Draft</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Icon picker */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Icon</label>
+                <div className="flex flex-wrap gap-2">
+                  {iconOptions.map((ic) => (
                     <button
+                      key={ic}
                       type="button"
-                      onClick={() => setEditing({ ...editing, image: '' })}
-                      className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 text-white p-2 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition"
+                      onClick={() => setEditing({ ...editing, icon: ic })}
+                      className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center transition ${editing.icon === ic ? 'bg-teal-600 ring-2 ring-teal-400' : 'bg-slate-800 hover:bg-slate-700'}`}
                     >
-                      🗑️ Remove
+                      {ic}
                     </button>
-                  </div>
-                )}
+                  ))}
+                </div>
+              </div>
+
+              {/* Color picker */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Card Color</label>
+                <div className="flex flex-wrap gap-2">
+                  {colorOptions.map((col) => (
+                    <button
+                      key={col.value}
+                      type="button"
+                      onClick={() => setEditing({ ...editing, color: col.value })}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r ${col.value} transition border-2 ${editing.color === col.value ? 'border-teal-400' : 'border-transparent'}`}
+                    >
+                      {col.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className={`rounded-2xl bg-gradient-to-br ${editing.color} p-4 flex items-center gap-3`}>
+                <span className="text-4xl">{editing.icon}</span>
+                <div>
+                  <p className="font-bold text-slate-800 text-sm">{editing.title || '(No title)'}</p>
+                  <p className="text-slate-600 text-xs">{editing.category} · {editing.readTime}</p>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-2">Category</label>
-                <select
-                  value={editing.category}
-                  onChange={(e) => setEditing({ ...editing, category: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
+            {/* Modal Footer - Fixed */}
+            <div className="p-8 pt-4 border-t border-slate-800">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => upsert(editing)}
+                  className="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-xl transition"
                 >
-                  {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-2">Read Time</label>
-                <input
-                  type="text"
-                  value={editing.readTime}
-                  onChange={(e) => setEditing({ ...editing, readTime: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
-                  placeholder="5 min read"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-2">Date</label>
-                <input
-                  type="text"
-                  value={editing.date}
-                  onChange={(e) => setEditing({ ...editing, date: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-2">Status</label>
-                <select
-                  value={editing.published ? 'published' : 'draft'}
-                  onChange={(e) => setEditing({ ...editing, published: e.target.value === 'published' })}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
+                  💾 Save Post
+                </button>
+                <button
+                  onClick={() => setEditing(null)}
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition"
                 >
-                  <option value="published">✅ Published</option>
-                  <option value="draft">📄 Draft</option>
-                </select>
+                  Cancel
+                </button>
               </div>
-            </div>
-
-            {/* Icon picker */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">Icon</label>
-              <div className="flex flex-wrap gap-2">
-                {iconOptions.map((ic) => (
-                  <button
-                    key={ic}
-                    type="button"
-                    onClick={() => setEditing({ ...editing, icon: ic })}
-                    className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center transition ${editing.icon === ic ? 'bg-teal-600 ring-2 ring-teal-400' : 'bg-slate-800 hover:bg-slate-700'}`}
-                  >
-                    {ic}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Color picker */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">Card Color</label>
-              <div className="flex flex-wrap gap-2">
-                {colorOptions.map((col) => (
-                  <button
-                    key={col.value}
-                    type="button"
-                    onClick={() => setEditing({ ...editing, color: col.value })}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r ${col.value} transition border-2 ${editing.color === col.value ? 'border-teal-400' : 'border-transparent'}`}
-                  >
-                    {col.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Preview */}
-            <div className={`rounded-2xl bg-gradient-to-br ${editing.color} p-4 flex items-center gap-3`}>
-              <span className="text-4xl">{editing.icon}</span>
-              <div>
-                <p className="font-bold text-slate-800 text-sm">{editing.title || '(No title)'}</p>
-                <p className="text-slate-600 text-xs">{editing.category} · {editing.readTime}</p>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => upsert(editing)}
-                className="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-xl transition"
-              >
-                💾 Save Post
-              </button>
-              <button
-                onClick={() => setEditing(null)}
-                className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition"
-              >
-                Cancel
-              </button>
             </div>
           </div>
         </div>

@@ -110,40 +110,42 @@ export default function BlogPage() {
                   transition={{ duration: 0.4, delay: i * 0.06 }}
                   className="group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-teal-900/8 hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
                 >
-                  <div className={`h-44 w-full bg-gradient-to-br ${post.color} relative overflow-hidden flex items-center justify-center`}>
-                    {post.image ? (
-                      <img 
-                        src={post.image} 
-                        alt={post.title}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    ) : (
-                      <>
-                        <div className="absolute inset-0 bg-grid-pattern opacity-30 mix-blend-overlay" />
-                        <span className="text-6xl select-none drop-shadow-md group-hover:scale-110 transition-transform duration-500">{post.icon}</span>
-                      </>
-                    )}
-                    <span className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${catColor[post.category] ?? 'bg-slate-100 text-slate-600'} z-10`}>
-                      {post.category}
-                    </span>
-                    {!post.image && <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />}
-                  </div>
+                  <Link href={`/blog/${post.id}`} className="flex flex-col h-full">
+                    <div className={`h-44 w-full bg-gradient-to-br ${post.color} relative overflow-hidden flex items-center justify-center`}>
+                      {post.image ? (
+                        <img 
+                          src={post.image} 
+                          alt={post.title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : (
+                        <>
+                          <div className="absolute inset-0 bg-grid-pattern opacity-30 mix-blend-overlay" />
+                          <span className="text-6xl select-none drop-shadow-md group-hover:scale-110 transition-transform duration-500">{post.icon}</span>
+                        </>
+                      )}
+                      <span className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${catColor[post.category] ?? 'bg-slate-100 text-slate-600'} z-10`}>
+                        {post.category}
+                      </span>
+                      {!post.image && <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />}
+                    </div>
 
-                  <div className="p-7 flex-1 flex flex-col">
-                    <div className="flex items-center gap-2 text-xs text-slate-400 font-medium mb-3">
-                      <span>{post.date}</span>
-                      <span className="w-1 h-1 rounded-full bg-slate-300" />
-                      <ClockIcon />
-                      <span>{post.readTime}</span>
+                    <div className="p-7 flex-1 flex flex-col">
+                      <div className="flex items-center gap-2 text-xs text-slate-400 font-medium mb-3">
+                        <span>{post.date}</span>
+                        <span className="w-1 h-1 rounded-full bg-slate-300" />
+                        <ClockIcon />
+                        <span>{post.readTime}</span>
+                      </div>
+                      <h2 className="text-lg font-bold text-slate-800 mb-3 group-hover:text-teal-600 transition-colors line-clamp-2 leading-snug">{post.title}</h2>
+                      <p className="text-slate-500 text-sm leading-relaxed line-clamp-3 flex-1 mb-5">{post.excerpt}</p>
+                      <div className="mt-auto">
+                        <span className="inline-flex items-center gap-2 text-teal-600 font-bold text-sm uppercase tracking-wide group-hover:gap-3 transition-all">
+                          Read Article <span className="text-base group-hover:translate-x-1 transition-transform">→</span>
+                        </span>
+                      </div>
                     </div>
-                    <h2 className="text-lg font-bold text-slate-800 mb-3 group-hover:text-teal-600 transition-colors line-clamp-2 leading-snug">{post.title}</h2>
-                    <p className="text-slate-500 text-sm leading-relaxed line-clamp-3 flex-1 mb-5">{post.excerpt}</p>
-                    <div className="mt-auto">
-                      <button className="inline-flex items-center gap-2 text-teal-600 font-bold text-sm uppercase tracking-wide group-hover:gap-3 transition-all">
-                        Read Article <span className="text-base group-hover:translate-x-1 transition-transform">→</span>
-                      </button>
-                    </div>
-                  </div>
+                  </Link>
                 </motion.article>
               ))}
             </motion.div>

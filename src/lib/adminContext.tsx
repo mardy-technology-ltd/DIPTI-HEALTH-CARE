@@ -21,10 +21,35 @@ export const useAdmin = () => useContext(Ctx)!;
 const LS = {
   get: <T,>(key: string, def: T): T => {
     if (typeof window === 'undefined') return def;
-    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; }
+    try {
+      const v = localStorage.getItem(key);
+      console.log(`📖 Loading ${key} from localStorage:`, v ? 'Found' : 'Not found');
+      return v ? JSON.parse(v) : def;
+    } catch (err) {
+      console.error(`❌ Error loading ${key}:`, err);
+      return def;
+    }
   },
   set: (key: string, val: unknown) => {
-    try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+    try {
+      const json = JSON.stringify(val);
+      const sizeMB = (new Blob([json]).size / (1024 * 1024)).toFixed(2);
+      console.log(`💾 Saving ${key} to localStorage (${sizeMB}MB)...`);
+      localStorage.setItem(key, json);
+      console.log(`✅ Successfully saved ${key}`);
+    } catch (err) {
+      console.error(`❌ Failed to save ${key}:`, err);
+      const sizeMB = (new Blob([JSON.stringify(val)]).size / (1024 * 1024)).toFixed(2);
+      alert(
+        `❌ Failed to save data!\n\n` +
+        `Error: ${err instanceof Error ? err.message : 'Unknown error'}\n` +
+        `Data size: ${sizeMB}MB\n\n` +
+        `💡 Tip: localStorage has ~5MB limit. Images are automatically compressed, but if you have many images, try:\n` +
+        `• Using fewer images\n` +
+        `• Removing some additional images\n` +
+        `• Deleting old posts you don't need`
+      );
+    }
   },
 };
 
@@ -44,7 +69,15 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setPostsState(LS.get('admin_posts', defaultBlogPosts));
   }, []);
 
-  const persist = (key: string, val: unknown) => { LS.set(key, val); setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  const persist = (key: string, val: unknown) => {
+    LS.set(key, val);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+    // Dispatch custom event for same-tab real-time sync
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(key + '_updated'));
+    }
+  };
 
   const setHero = (v: HeroData) => { setHeroState(v); persist('admin_hero', v); };
   const setExperiences = (v: ExperienceItem[]) => { setExpState(v); persist('admin_exp', v); };

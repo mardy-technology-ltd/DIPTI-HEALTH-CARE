@@ -42,6 +42,25 @@ export function useContact() {
 
 export function usePosts() {
   const [data, setData] = useState<BlogPost[]>(defaultBlogPosts);
-  useEffect(() => { setData(lsGet('admin_posts', defaultBlogPosts)); }, []);
+  useEffect(() => {
+    setData(lsGet('admin_posts', defaultBlogPosts));
+
+    // Listen for storage events (cross-tab updates)
+    const handleStorage = () => {
+      setData(lsGet('admin_posts', defaultBlogPosts));
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // Listen for custom events (same-tab updates)
+    const handleUpdate = () => {
+      setData(lsGet('admin_posts', defaultBlogPosts));
+    };
+    window.addEventListener('admin_posts_updated', handleUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('admin_posts_updated', handleUpdate);
+    };
+  }, []);
   return data;
 }
