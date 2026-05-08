@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect } from 'react';
 import HeroContent from '@/components/HeroContent';
 import HeroImage from '@/components/HeroImage';
 import ExperienceSection from '@/components/ExperienceSection';
@@ -6,10 +9,20 @@ import BlogSection from '@/components/BlogSection';
 import ContactSection from '@/components/ContactSection';
 
 export default function Home() {
+  // Handle hash scrolling when arriving from another page (e.g. /blog → /#experience)
+  useEffect(() => {
+    const id = window.location.hash?.slice(1);
+    if (id) {
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, []);
+
   return (
     <>
-      <main className="min-h-screen relative bg-grid-pattern overflow-hidden">
-        {/* Ambient background glowing orbs */}
+      <main className="relative bg-grid-pattern overflow-hidden">
+        {/* Decorative background orbs */}
         <div className="orb-teal" />
         <div className="orb-blue" />
 

@@ -7,7 +7,7 @@ export default function ExperienceSection() {
   const experiences = useExperiences();
 
   return (
-    <section id="experience" className="py-24 bg-white">
+    <section id="experience" className="py-24 bg-white scroll-mt-20">
       <div className="container mx-auto px-6 md:px-12 max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

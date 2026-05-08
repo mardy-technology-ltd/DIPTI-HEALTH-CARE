@@ -7,7 +7,7 @@ export default function ContactSection() {
   const contact = useContact();
 
   return (
-    <section id="contact" className="py-24 bg-slate-50 relative overflow-hidden">
+    <section id="contact" className="py-24 bg-slate-50 relative overflow-hidden scroll-mt-20">
       <div className="container mx-auto px-6 md:px-12 max-w-6xl relative z-10">
 
         <motion.div

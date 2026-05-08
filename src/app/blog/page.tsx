@@ -11,11 +11,6 @@ const SearchIcon = () => (
     <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
   </svg>
 );
-const ArrowLeftIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-    <path d="M19 12H5m0 0 7 7m-7-7 7-7" />
-  </svg>
-);
 const ClockIcon = () => (
   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
@@ -57,10 +52,6 @@ export default function BlogPage() {
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
 
         <div className="relative container mx-auto px-6 md:px-12 max-w-7xl text-center">
-          <Link href="/" className="inline-flex items-center gap-2 text-teal-400 hover:text-teal-300 text-sm font-medium mb-8 transition-colors">
-            <ArrowLeftIcon /> Back to Home
-          </Link>
-
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <span className="inline-block px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-bold uppercase tracking-widest mb-5">
               Health Insights

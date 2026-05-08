@@ -17,7 +17,7 @@ export default function BlogSection() {
   const featured = allPosts.filter((p) => p.published).slice(0, 3);
 
   return (
-    <section id="blog" className="py-24 bg-white relative">
+    <section id="blog" className="py-24 bg-white relative scroll-mt-20">
       <div className="container mx-auto px-6 md:px-12 max-w-7xl">
 
         {/* Section header */}

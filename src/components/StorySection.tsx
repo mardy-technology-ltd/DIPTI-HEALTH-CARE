@@ -8,7 +8,7 @@ export default function StorySection() {
   const story = useStory();
 
   return (
-    <section id="story" className="py-24 bg-white relative overflow-hidden">
+    <section id="story" className="py-24 bg-white relative overflow-hidden scroll-mt-20">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-teal-200 to-transparent" />
 
       <div className="container mx-auto px-6 md:px-12 max-w-6xl">

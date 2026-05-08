@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${jakarta.variable} scroll-smooth`}>
-      <body className="bg-[#f8fbff] text-slate-800 min-h-screen font-sans antialiased overflow-x-hidden">
+      <body className="bg-[#f8fbff] text-slate-800 min-h-screen font-sans antialiased">
         <NavbarWrapper />
         {children}
       </body>
