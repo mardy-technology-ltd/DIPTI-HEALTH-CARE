@@ -1,10 +1,16 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePosts } from '@/lib/useSiteData';
 import { BlogPost } from '@/lib/siteData';
+
+const ClockIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+  </svg>
+);
 
 const catColor: Record<string, string> = {
   'Health Advice':     'bg-teal-100 text-teal-700',
@@ -45,6 +51,19 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
+
+  // Get related posts from same category (max 4)
+  const relatedPosts = useMemo(() => {
+    if (!post) return [];
+    
+    return allPosts
+      .filter(p => 
+        p.published && 
+        p.id !== post.id && 
+        p.category === post.category
+      )
+      .slice(0, 4);
+  }, [post, allPosts]);
 
   useEffect(() => {
     console.log('🔍 Looking for post with slug:', slug);
@@ -338,6 +357,84 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
               )}
             </div>
           </article>
+
+          {/* Related Posts Section */}
+          {relatedPosts.length > 0 && (
+            <div className="mt-16">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-800">
+                  Related Articles in <span className="text-teal-600">{post.category}</span>
+                </h2>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {relatedPosts.map((relatedPost, idx) => (
+                  <motion.article
+                    key={relatedPost.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: idx * 0.1 }}
+                    className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                  >
+                    <Link href={`/blog/${relatedPost.slug || relatedPost.id}`} className="flex flex-col h-full">
+                      {/* Image/Icon Header */}
+                      <div className={`h-40 w-full bg-gradient-to-br ${relatedPost.color} relative overflow-hidden flex items-center justify-center`}>
+                        {relatedPost.image ? (
+                          <img 
+                            src={relatedPost.image} 
+                            alt={relatedPost.title}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : (
+                          <>
+                            <div className="absolute inset-0 bg-grid-pattern opacity-30 mix-blend-overlay" />
+                            <span className="text-5xl select-none drop-shadow-md group-hover:scale-110 transition-transform duration-500">{relatedPost.icon}</span>
+                          </>
+                        )}
+                        <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${catColor[relatedPost.category] ?? 'bg-slate-100 text-slate-600'} z-10`}>
+                          {relatedPost.category}
+                        </span>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5 flex-1 flex flex-col">
+                        <div className="flex items-center gap-2 text-xs text-slate-400 font-medium mb-2">
+                          <span>{relatedPost.date}</span>
+                          <span className="w-1 h-1 rounded-full bg-slate-300" />
+                          <ClockIcon />
+                          <span>{relatedPost.readTime}</span>
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 mb-2 group-hover:text-teal-600 transition-colors line-clamp-2 leading-snug">
+                          {relatedPost.title}
+                        </h3>
+                        <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 flex-1">
+                          {relatedPost.excerpt}
+                        </p>
+                        <div className="mt-4 pt-4 border-t border-slate-100">
+                          <span className="inline-flex items-center gap-2 text-teal-600 font-semibold text-sm group-hover:gap-3 transition-all">
+                            Read More <span className="group-hover:translate-x-1 transition-transform">→</span>
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.article>
+                ))}
+              </div>
+
+              {/* View All in Category */}
+              <div className="mt-8 text-center">
+                <Link
+                  href={`/blog?category=${encodeURIComponent(post.category)}`}
+                  className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-semibold text-sm group transition-colors"
+                >
+                  View All {post.category} Articles
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Back Button */}
           <div className="mt-12 text-center">
