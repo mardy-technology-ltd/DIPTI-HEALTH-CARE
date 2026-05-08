@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import NavbarWrapper from '@/components/NavbarWrapper'
+import ScrollToTop from '@/components/ScrollToTop'
 
 const jakarta = Plus_Jakarta_Sans({ 
   subsets: ['latin'],
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className="bg-[#f8fbff] text-slate-800 min-h-screen font-sans antialiased">
         <NavbarWrapper />
         {children}
+        <ScrollToTop showProgress={true} />
       </body>
     </html>
   )
