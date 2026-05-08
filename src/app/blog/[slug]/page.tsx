@@ -38,8 +38,8 @@ function linkifyContent(text: string) {
   });
 }
 
-export default function BlogDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const allPosts = usePosts();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -47,12 +47,23 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
   const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
-    console.log('🔍 Looking for post with ID:', id);
-    console.log('📚 Available posts:', allPosts.map(p => ({ id: p.id, title: p.title })));
-    const found = allPosts.find((p) => p.id === Number(id));
-    console.log('✅ Found post:', found ? found.title : 'Not found');
+    console.log('🔍 Looking for post with slug:', slug);
+    console.log('📖 Available posts:', allPosts.map(p => ({ id: p.id, slug: p.slug, title: p.title })));
+    
+    const publishedPosts = allPosts.filter(p => p.published);
+    
+    // Try to find by slug first
+    let found = publishedPosts.find(p => p.slug === slug);
+    
+    // Fallback: try numeric ID for backward compatibility
+    if (!found && !isNaN(Number(slug))) {
+      found = publishedPosts.find(p => p.id === Number(slug));
+      console.log('⚠️ Found by ID fallback:', found?.title);
+    }
+    
+    console.log(found ? '✅ Found post:' : '❌ Post not found:', found?.title);
     setPost(found || null);
-  }, [allPosts, id]);
+  }, [slug, allPosts]);
 
   // Auto-play carousel
   useEffect(() => {

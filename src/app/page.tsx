@@ -14,7 +14,12 @@ export default function Home() {
     const id = window.location.hash?.slice(1);
     if (id) {
       setTimeout(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Remove hash from URL to keep it clean
+          window.history.replaceState(null, '', '/');
+        }
       }, 100);
     }
   }, []);

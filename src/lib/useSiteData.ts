@@ -40,20 +40,62 @@ export function useContact() {
   return data;
 }
 
+// Generate SEO-friendly slug from title
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // remove special chars
+    .replace(/\s+/g, '-') // spaces to hyphens
+    .replace(/-+/g, '-') // collapse multiple hyphens
+    .slice(0, 60); // limit length
+};
+
 export function usePosts() {
   const [data, setData] = useState<BlogPost[]>(defaultBlogPosts);
   useEffect(() => {
-    setData(lsGet('admin_posts', defaultBlogPosts));
+    let posts = lsGet('admin_posts', defaultBlogPosts);
+    
+    console.log('📊 Raw posts from localStorage:', posts.map(p => ({ id: p.id, slug: p.slug, title: p.title })));
+    
+    // Migration: Add slugs to old posts that don't have them
+    let needsMigration = false;
+    posts = posts.map(post => {
+      if (!post.slug) {
+        needsMigration = true;
+        const newSlug = post.title ? generateSlug(post.title) : `post-${post.id}`;
+        console.log(`🔄 Migrating post ${post.id}: "${post.title}" → slug: "${newSlug}"`);
+        return { ...post, slug: newSlug };
+      }
+      return post;
+    });
+    
+    // Save migrated data back to localStorage
+    if (needsMigration) {
+      try {
+        localStorage.setItem('admin_posts', JSON.stringify(posts));
+        console.log('✅ Migrated blog posts with slugs, saved to localStorage');
+        console.log('📊 After migration:', posts.map(p => ({ id: p.id, slug: p.slug, title: p.title })));
+      } catch (e) {
+        console.error('❌ Failed to save migrated posts:', e);
+      }
+    }
+    
+    setData(posts);
 
     // Listen for storage events (cross-tab updates)
     const handleStorage = () => {
-      setData(lsGet('admin_posts', defaultBlogPosts));
+      const updated = lsGet('admin_posts', defaultBlogPosts);
+      console.log('🔄 Storage event: reloading posts');
+      setData(updated);
     };
     window.addEventListener('storage', handleStorage);
 
     // Listen for custom events (same-tab updates)
     const handleUpdate = () => {
-      setData(lsGet('admin_posts', defaultBlogPosts));
+      const updated = lsGet('admin_posts', defaultBlogPosts);
+      console.log('🔄 Custom event: reloading posts');
+      setData(updated);
     };
     window.addEventListener('admin_posts_updated', handleUpdate);
 

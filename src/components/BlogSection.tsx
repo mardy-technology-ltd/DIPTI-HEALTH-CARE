@@ -16,6 +16,13 @@ export default function BlogSection() {
   // show only published posts, max 3
   const featured = allPosts.filter((p) => p.published).slice(0, 3);
 
+  console.log('🏠 Home page blog cards:', featured.map(p => ({ 
+    id: p.id, 
+    slug: p.slug, 
+    title: p.title,
+    url: `/blog/${p.slug || p.id}`
+  })));
+
   return (
     <section id="blog" className="py-24 bg-white relative scroll-mt-20">
       <div className="container mx-auto px-6 md:px-12 max-w-7xl">
@@ -59,7 +66,7 @@ export default function BlogSection() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="bg-slate-50 rounded-3xl border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-teal-900/5 hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col"
             >
-              <Link href={`/blog/${post.id}`} className="flex flex-col h-full">
+              <Link href={`/blog/${post.slug || post.id}`} className="flex flex-col h-full">
                 {/* Card header */}
                 <div className={`h-48 w-full bg-gradient-to-br ${post.color} relative overflow-hidden flex items-center justify-center`}>
                   {post.image ? (

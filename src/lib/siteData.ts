@@ -42,6 +42,7 @@ export type ContactData = {
 
 export type BlogPost = {
   id: number;
+  slug?: string; // SEO-friendly URL slug (optional for backward compatibility)
   title: string;
   category: string;
   date: string;
@@ -51,6 +52,8 @@ export type BlogPost = {
   icon: string;
   published: boolean;
   image?: string; // optional image URL or base64
+  content?: string;
+  images?: string[];
 };
 
 // ── Defaults ──────────────────────────────────────────────────
@@ -117,6 +120,7 @@ export const defaultContact: ContactData = {
 export const defaultBlogPosts: BlogPost[] = [
   {
     id: 1,
+    slug: 'the-importance-of-regular-checkups',
     title: 'The Importance of Regular Checkups',
     category: 'Health Advice',
     date: 'Oct 12, 2026',
@@ -129,6 +133,7 @@ export const defaultBlogPosts: BlogPost[] = [
   },
   {
     id: 2,
+    slug: 'managing-stress-in-high-pressure-environments',
     title: 'Managing Stress in High-Pressure Environments',
     category: 'Mental Wellness',
     date: 'Oct 05, 2026',
@@ -141,6 +146,7 @@ export const defaultBlogPosts: BlogPost[] = [
   },
   {
     id: 3,
+    slug: 'nutrition-tips-for-a-healthy-heart',
     title: 'Nutrition Tips for a Healthy Heart',
     category: 'Diet & Lifestyle',
     date: 'Sep 28, 2026',
@@ -153,6 +159,7 @@ export const defaultBlogPosts: BlogPost[] = [
   },
   {
     id: 4,
+    slug: 'understanding-blood-pressure-a-complete-guide',
     title: 'Understanding Blood Pressure: A Complete Guide',
     category: 'Health Advice',
     date: 'Sep 20, 2026',
@@ -165,6 +172,7 @@ export const defaultBlogPosts: BlogPost[] = [
   },
   {
     id: 5,
+    slug: 'the-role-of-sleep-in-patient-recovery',
     title: 'The Role of Sleep in Patient Recovery',
     category: 'Clinical Insights',
     date: 'Sep 14, 2026',
@@ -177,6 +185,7 @@ export const defaultBlogPosts: BlogPost[] = [
   },
   {
     id: 6,
+    slug: 'building-resilience-as-a-healthcare-professional',
     title: 'Building Resilience as a Healthcare Professional',
     category: 'Mental Wellness',
     date: 'Sep 07, 2026',

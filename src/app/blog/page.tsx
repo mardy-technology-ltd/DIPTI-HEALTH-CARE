@@ -33,13 +33,22 @@ export default function BlogPage() {
   const [query, setQuery] = useState('');
 
   const filtered = useMemo(() => {
-    return publishedPosts.filter((p) => {
+    const result = publishedPosts.filter((p) => {
       const matchCat = activeCategory === 'All' || p.category === activeCategory;
       const matchQ   = query === '' ||
         p.title.toLowerCase().includes(query.toLowerCase()) ||
         p.excerpt.toLowerCase().includes(query.toLowerCase());
       return matchCat && matchQ;
     });
+    
+    console.log('📄 Blog page filtered posts:', result.map(p => ({ 
+      id: p.id, 
+      slug: p.slug, 
+      title: p.title,
+      url: `/blog/${p.slug || p.id}`
+    })));
+    
+    return result;
   }, [publishedPosts, activeCategory, query]);
 
   return (
@@ -110,7 +119,7 @@ export default function BlogPage() {
                   transition={{ duration: 0.4, delay: i * 0.06 }}
                   className="group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-teal-900/8 hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
                 >
-                  <Link href={`/blog/${post.id}`} className="flex flex-col h-full">
+                  <Link href={`/blog/${post.slug || post.id}`} className="flex flex-col h-full">
                     <div className={`h-44 w-full bg-gradient-to-br ${post.color} relative overflow-hidden flex items-center justify-center`}>
                       {post.image ? (
                         <img 

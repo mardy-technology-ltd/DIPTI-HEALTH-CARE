@@ -4,8 +4,20 @@ import { useState, useEffect } from 'react';
 import { useAdmin } from '@/lib/adminContext';
 import { BlogPost, categories, iconOptions, colorOptions } from '@/lib/siteData';
 
+// Generate SEO-friendly slug from title
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // remove special chars
+    .replace(/\s+/g, '-') // spaces to hyphens
+    .replace(/-+/g, '-') // collapse multiple hyphens
+    .slice(0, 60); // limit length
+};
+
 const blank = (): BlogPost => ({
   id: Date.now(),
+  slug: '',
   title: '',
   category: categories[0],
   date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
@@ -72,11 +84,35 @@ export default function BlogAdminPage() {
   };
 
   const upsert = (post: BlogPost) => {
-    console.log('📝 Upserting post:', { id: post.id, title: post.title, published: post.published });
+    // Auto-generate slug from title if slug is missing/empty
+    const hasNoSlug = !post.slug || post.slug.trim() === '';
+    const hasTitle = post.title && post.title.trim() !== '';
+    
+    if (hasTitle && hasNoSlug) {
+      post.slug = generateSlug(post.title);
+      console.log('🆕 Generated new slug:', post.slug, 'for title:', post.title);
+    } else if (hasTitle && post.slug) {
+      // Regenerate slug if title changed
+      const existing = items.find((p) => p.id === post.id);
+      if (existing && existing.title !== post.title) {
+        post.slug = generateSlug(post.title);
+        console.log('🔄 Regenerated slug:', post.slug, 'for updated title:', post.title);
+      }
+    }
+    
+    console.log('📝 Upserting post:', { 
+      id: post.id, 
+      slug: post.slug, 
+      title: post.title, 
+      published: post.published,
+      hasSlug: !!post.slug 
+    });
+    
     const next = items.find((p) => p.id === post.id)
       ? items.map((p) => (p.id === post.id ? post : p))
       : [post, ...items];
     console.log('📊 New posts array length:', next.length);
+    console.log('📋 All post slugs:', next.map(p => ({ id: p.id, slug: p.slug, title: p.title })));
     saveAll(next);
     setEditing(null);
   };
@@ -164,6 +200,8 @@ export default function BlogAdminPage() {
                       )}
                       <div className="flex flex-col">
                         <span className="text-white font-semibold line-clamp-1 max-w-xs">{post.title || '(Untitled)'}</span>
+                        {post.slug && <span className="text-xs text-slate-500 font-mono">/{post.slug}</span>}
+                        {!post.slug && <span className="text-xs text-amber-500">⚠️ No slug</span>}
                         {post.image && <span className="text-xs text-teal-400">📷 Image attached</span>}
                       </div>
                     </div>
@@ -238,6 +276,13 @@ export default function BlogAdminPage() {
                   className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm"
                   placeholder="Post title…"
                 />
+                {/* Slug Preview */}
+                {editing.title && (
+                  <div className="mt-2 text-xs text-slate-400 font-mono flex items-center gap-2">
+                    <span className="text-slate-500">URL:</span>
+                    <span className="text-teal-400">/blog/{generateSlug(editing.title)}</span>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -439,8 +484,15 @@ export default function BlogAdminPage() {
             <div className="p-8 pt-4 border-t border-slate-800">
               <div className="flex gap-3">
                 <button
-                  onClick={() => upsert(editing)}
-                  className="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-xl transition"
+                  onClick={() => {
+                    if (!editing.title || editing.title.trim() === '') {
+                      alert('⚠️ Please enter a title for the post');
+                      return;
+                    }
+                    upsert(editing);
+                  }}
+                  className="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!editing.title || editing.title.trim() === ''}
                 >
                   💾 Save Post
                 </button>
