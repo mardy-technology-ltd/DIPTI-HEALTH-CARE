@@ -179,6 +179,85 @@ export default function BlogPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-950 py-12 border-t border-slate-800">
+        <div className="container mx-auto px-6 md:px-12 max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Brand */}
+            <div>
+              <Link href="/" className="inline-block">
+                <h3 className="text-xl font-bold text-white mb-3 hover:text-teal-400 transition-colors cursor-pointer">
+                  Dipti Health Care
+                </h3>
+              </Link>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Providing compassionate care and expert health guidance with over 12 years of nursing experience.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
+                Quick Links
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/" className="text-slate-400 hover:text-teal-400 text-sm transition">
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/#about" className="text-slate-400 hover:text-teal-400 text-sm transition">
+                    About Me
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog" className="text-slate-400 hover:text-teal-400 text-sm transition">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/#contact" className="text-slate-400 hover:text-teal-400 text-sm transition">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Categories */}
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
+                Categories
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <span className="text-slate-400 text-sm">Health Advice</span>
+                </li>
+                <li>
+                  <span className="text-slate-400 text-sm">Mental Wellness</span>
+                </li>
+                <li>
+                  <span className="text-slate-400 text-sm">Diet & Lifestyle</span>
+                </li>
+                <li>
+                  <span className="text-slate-400 text-sm">Clinical Insights</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-slate-500 text-sm">
+              © {new Date().getFullYear()} Dipti Health Care. All rights reserved.
+            </p>
+            <p className="text-slate-500 text-sm">
+              Made with <span className="text-red-500">❤️</span> for better health
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

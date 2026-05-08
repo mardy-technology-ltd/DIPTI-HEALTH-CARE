@@ -133,19 +133,19 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
             <span>←</span> Back to Blog
           </Link>
           
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${catColor[post.category] ?? 'bg-slate-700 text-slate-300'} mb-4`}>
-            {post.category}
-          </span>
-          
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
             {post.title}
           </h1>
           
-          <div className="flex items-center gap-4 text-slate-400">
+          <div className="flex items-center gap-4 text-slate-400 mb-4">
             <span>{post.date}</span>
             <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
             <span>{post.readTime}</span>
           </div>
+
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${catColor[post.category] ?? 'bg-slate-700 text-slate-300'}`}>
+            {post.category}
+          </span>
         </div>
       </section>
 
@@ -336,6 +336,123 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
       </section>
+
+      {/* Footer CTA */}
+      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-20">
+        <div className="container mx-auto px-6 md:px-12 max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-teal-500/10 rounded-full mb-6">
+              <span className="text-3xl">💬</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
+              Have Questions?
+            </h2>
+            <p className="text-slate-400 text-lg mb-8 leading-relaxed max-w-2xl mx-auto">
+              I'm here to help! Whether you need health advice, wellness tips, or have questions about this article, feel free to reach out.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/#contact"
+                className="inline-flex items-center gap-2 bg-teal-500 hover:bg-teal-400 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 shadow-lg shadow-teal-500/30 hover:-translate-y-0.5"
+              >
+                Get in Touch →
+              </Link>
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-8 py-4 rounded-full transition-all duration-300 border border-white/20"
+              >
+                Read More Articles
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-950 py-12 border-t border-slate-800">
+        <div className="container mx-auto px-6 md:px-12 max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Brand */}
+            <div>
+              <Link href="/" className="inline-block">
+                <h3 className="text-xl font-bold text-white mb-3 hover:text-teal-400 transition-colors cursor-pointer">
+                  Dipti Health Care
+                </h3>
+              </Link>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Providing compassionate care and expert health guidance with over 12 years of nursing experience.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
+                Quick Links
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/" className="text-slate-400 hover:text-teal-400 text-sm transition">
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/#about" className="text-slate-400 hover:text-teal-400 text-sm transition">
+                    About Me
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog" className="text-slate-400 hover:text-teal-400 text-sm transition">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/#contact" className="text-slate-400 hover:text-teal-400 text-sm transition">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Categories */}
+            <div>
+              <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-3">
+                Categories
+              </h4>
+              <ul className="space-y-2">
+                <li>
+                  <span className="text-slate-400 text-sm">Health Advice</span>
+                </li>
+                <li>
+                  <span className="text-slate-400 text-sm">Mental Wellness</span>
+                </li>
+                <li>
+                  <span className="text-slate-400 text-sm">Diet & Lifestyle</span>
+                </li>
+                <li>
+                  <span className="text-slate-400 text-sm">Clinical Insights</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-slate-500 text-sm">
+              © {new Date().getFullYear()} Dipti Health Care. All rights reserved.
+            </p>
+            <p className="text-slate-500 text-sm">
+              Made with <span className="text-red-500">❤️</span> for better health
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
+

@@ -68,7 +68,7 @@ export default function Navbar() {
       <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
         <button
           onClick={handleLogoClick}
-          className="text-2xl font-extrabold text-slate-800 tracking-tight"
+          className="text-2xl font-extrabold text-slate-800 tracking-tight cursor-pointer hover:opacity-80 transition-opacity"
         >
           Dipti<span className="text-teal-600">.Care</span>
         </button>
