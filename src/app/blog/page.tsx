@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePosts } from '@/lib/useSiteData';
 import { categories } from '@/lib/siteData';
@@ -29,8 +30,20 @@ export default function BlogPage() {
   // only show published posts to visitors
   const publishedPosts = allPosts.filter((p) => p.published);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const categoryParam = searchParams.get('category');
+
   const [activeCategory, setActiveCategory] = useState('All');
   const [query, setQuery] = useState('');
+
+  // Set initial category from URL
+  useEffect(() => {
+    if (categoryParam && categories.includes(categoryParam)) {
+      console.log('🔗 Setting category from URL:', categoryParam);
+      setActiveCategory(categoryParam);
+    }
+  }, [categoryParam]);
 
   const filtered = useMemo(() => {
     const result = publishedPosts.filter((p) => {
@@ -90,7 +103,15 @@ export default function BlogPage() {
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
         <div className="container mx-auto px-6 md:px-12 max-w-7xl py-4 flex gap-3 overflow-x-auto">
           {['All', ...categories].map((cat) => (
-            <button key={cat} onClick={() => setActiveCategory(cat)}
+            <button key={cat} onClick={() => {
+              setActiveCategory(cat);
+              // Update URL with category filter
+              if (cat === 'All') {
+                router.push('/blog');
+              } else {
+                router.push(`/blog?category=${encodeURIComponent(cat)}`);
+              }
+            }}
               className={`shrink-0 px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
                 activeCategory === cat ? 'bg-teal-600 text-white shadow-lg shadow-teal-500/30' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}

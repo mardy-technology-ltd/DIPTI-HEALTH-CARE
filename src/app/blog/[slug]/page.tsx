@@ -154,9 +154,12 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
             <span>{post.readTime}</span>
           </div>
 
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${catColor[post.category] ?? 'bg-slate-700 text-slate-300'}`}>
+          <Link 
+            href={`/blog?category=${encodeURIComponent(post.category)}`}
+            className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider hover:ring-2 hover:ring-white/30 transition-all ${catColor[post.category] ?? 'bg-slate-700 text-slate-300'}`}
+          >
             {post.category}
-          </span>
+          </Link>
         </div>
       </section>
 
