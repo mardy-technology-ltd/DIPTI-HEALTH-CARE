@@ -31,7 +31,7 @@ export function useHero() {
         // Fallback to localStorage or default data if Supabase fails
         setData(lsGet('admin_hero', defaultHero));
       } else if (heroData) {
-        setData(heroData);
+        setData({ ...defaultHero, ...heroData });
       }
     };
 

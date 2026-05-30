@@ -7,11 +7,11 @@ import {
 } from '@/lib/siteData';
 
 type AdminCtx = {
-  hero: HeroData; setHero: (v: HeroData) => void;
-  experiences: ExperienceItem[]; setExperiences: (v: ExperienceItem[]) => void;
-  story: StoryData; setStory: (v: StoryData) => void;
-  contact: ContactData; setContact: (v: ContactData) => void;
-  posts: BlogPost[]; setPosts: (v: BlogPost[]) => void;
+  hero: HeroData; setHero: (v: HeroData) => Promise<void>;
+  experiences: ExperienceItem[]; setExperiences: (v: ExperienceItem[]) => Promise<void>;
+  story: StoryData; setStory: (v: StoryData) => Promise<void>;
+  contact: ContactData; setContact: (v: ContactData) => Promise<void>;
+  posts: BlogPost[]; setPosts: (v: BlogPost[]) => Promise<void>;
   saved: boolean; setSaved: (v: boolean) => void;
 };
 
@@ -69,21 +69,50 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setPostsState(LS.get('admin_posts', defaultBlogPosts));
   }, []);
 
-  const persist = (key: string, val: unknown) => {
-    LS.set(key, val);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-    // Dispatch custom event for same-tab real-time sync
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event(key + '_updated'));
+  const persist = async (section: string, storageKey: string, value: unknown, applyState: () => void) => {
+    try {
+      const response = await fetch('/api/admin/site-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section, value }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const message = [payload.error, payload.details, payload.hint].filter(Boolean).join('\n');
+        throw new Error(message || 'Failed to save site data');
+      }
+
+      LS.set(storageKey, value);
+      applyState();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event(storageKey + '_updated'));
+      }
+    } catch (error) {
+      console.error(`❌ Failed to save ${section}:`, error);
+      alert(error instanceof Error ? error.message : 'Failed to save site data');
     }
   };
 
-  const setHero = (v: HeroData) => { setHeroState(v); persist('admin_hero', v); };
-  const setExperiences = (v: ExperienceItem[]) => { setExpState(v); persist('admin_exp', v); };
-  const setStory = (v: StoryData) => { setStoryState(v); persist('admin_story', v); };
-  const setContact = (v: ContactData) => { setContactState(v); persist('admin_contact', v); };
-  const setPosts = (v: BlogPost[]) => { setPostsState(v); persist('admin_posts', v); };
+  const setHero = async (v: HeroData) => {
+    await persist('hero', 'admin_hero', v, () => setHeroState(v));
+  };
+  const setExperiences = async (v: ExperienceItem[]) => {
+    await persist('experiences', 'admin_exp', v, () => setExpState(v));
+  };
+  const setStory = async (v: StoryData) => {
+    await persist('story', 'admin_story', v, () => setStoryState(v));
+  };
+  const setContact = async (v: ContactData) => {
+    await persist('contact', 'admin_contact', v, () => setContactState(v));
+  };
+  const setPosts = async (v: BlogPost[]) => {
+    await persist('posts', 'admin_posts', v, () => setPostsState(v));
+  };
 
   return (
     <Ctx.Provider value={{ hero, setHero, experiences, setExperiences, story, setStory, contact, setContact, posts, setPosts, saved, setSaved }}>
