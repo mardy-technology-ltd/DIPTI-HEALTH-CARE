@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 import {
   defaultHero, defaultExperiences, defaultStory, defaultContact, defaultBlogPosts,
   HeroData, ExperienceItem, StoryData, ContactData, BlogPost, Message,
@@ -18,26 +19,100 @@ function lsGet<T>(key: string, def: T): T {
 
 export function useHero() {
   const [data, setData] = useState<HeroData>(defaultHero);
-  useEffect(() => { setData(lsGet('admin_hero', defaultHero)); }, []);
+  useEffect(() => {
+    const fetchHeroData = async () => {
+      const { data: heroData, error } = await supabase
+        .from('hero')
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Error fetching hero data from Supabase. Falling back to local data.', error);
+        // Fallback to localStorage or default data if Supabase fails
+        setData(lsGet('admin_hero', defaultHero));
+      } else if (heroData) {
+        setData(heroData);
+      }
+    };
+
+    fetchHeroData();
+  }, []);
   return data;
 }
 
 export function useExperiences() {
   const [data, setData] = useState<ExperienceItem[]>(defaultExperiences);
-  useEffect(() => { setData(lsGet('admin_exp', defaultExperiences)); }, []);
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      const { data: experiencesData, error } = await supabase
+        .from('experiences')
+        .select('*')
+        .order('id', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching experiences data:', error);
+        setData(lsGet('admin_exp', defaultExperiences)); // Fallback
+      } else if (experiencesData) {
+        setData(experiencesData);
+      }
+    };
+
+    fetchExperiences();
+  }, []);
   return data;
 }
 
 export function useStory() {
   const [data, setData] = useState<StoryData>(defaultStory);
-  useEffect(() => { setData(lsGet('admin_story', defaultStory)); }, []);
+  useEffect(() => {
+    const fetchStory = async () => {
+      const { data: storyData, error } = await supabase
+        .from('story')
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Error fetching story data:', error);
+        setData(lsGet('admin_story', defaultStory)); // Fallback
+      } else if (storyData) {
+        setData(storyData);
+      }
+    };
+
+    fetchStory();
+  }, []);
   return data;
 }
 
 export function useContact() {
   const [data, setData] = useState<ContactData>(defaultContact);
-  useEffect(() => { setData(lsGet('admin_contact', defaultContact)); }, []);
+  useEffect(() => {
+    const fetchContact = async () => {
+      const { data: contactData, error } = await supabase
+        .from('contact')
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Error fetching contact data:', error);
+        setData(lsGet('admin_contact', defaultContact)); // Fallback
+      } else if (contactData) {
+        setData(contactData);
+      }
+    };
+
+    fetchContact();
+  }, []);
   return data;
+}
+
+export async function addMessage(message: Omit<Message, 'id' | 'created_at'>): Promise<{ error: Error | null }> {
+  const { error } = await supabase.from('messages').insert([message]);
+  if (error) {
+    console.error('Error sending message:', error);
+    return { error: new Error('Failed to send message. Please try again later.') };
+  }
+  return { error: null };
 }
 
 // Generate SEO-friendly slug from title
@@ -54,55 +129,22 @@ const generateSlug = (title: string): string => {
 export function usePosts() {
   const [data, setData] = useState<BlogPost[]>(defaultBlogPosts);
   useEffect(() => {
-    let posts = lsGet('admin_posts', defaultBlogPosts);
-    
-    console.log('📊 Raw posts from localStorage:', posts.map(p => ({ id: p.id, slug: p.slug, title: p.title })));
-    
-    // Migration: Add slugs to old posts that don't have them
-    let needsMigration = false;
-    posts = posts.map(post => {
-      if (!post.slug) {
-        needsMigration = true;
-        const newSlug = post.title ? generateSlug(post.title) : `post-${post.id}`;
-        console.log(`🔄 Migrating post ${post.id}: "${post.title}" → slug: "${newSlug}"`);
-        return { ...post, slug: newSlug };
+    const fetchPosts = async () => {
+      const { data: postsData, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('published', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching posts:', error);
+        setData(lsGet('admin_posts', defaultBlogPosts)); // Fallback
+      } else if (postsData) {
+        setData(postsData);
       }
-      return post;
-    });
-    
-    // Save migrated data back to localStorage
-    if (needsMigration) {
-      try {
-        localStorage.setItem('admin_posts', JSON.stringify(posts));
-        console.log('✅ Migrated blog posts with slugs, saved to localStorage');
-        console.log('📊 After migration:', posts.map(p => ({ id: p.id, slug: p.slug, title: p.title })));
-      } catch (e) {
-        console.error('❌ Failed to save migrated posts:', e);
-      }
-    }
-    
-    setData(posts);
-
-    // Listen for storage events (cross-tab updates)
-    const handleStorage = () => {
-      const updated = lsGet('admin_posts', defaultBlogPosts);
-      console.log('🔄 Storage event: reloading posts');
-      setData(updated);
     };
-    window.addEventListener('storage', handleStorage);
 
-    // Listen for custom events (same-tab updates)
-    const handleUpdate = () => {
-      const updated = lsGet('admin_posts', defaultBlogPosts);
-      console.log('🔄 Custom event: reloading posts');
-      setData(updated);
-    };
-    window.addEventListener('admin_posts_updated', handleUpdate);
-
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('admin_posts_updated', handleUpdate);
-    };
+    fetchPosts();
   }, []);
   return data;
 }
@@ -138,29 +180,4 @@ export function useMessages() {
   return data;
 }
 
-// Add a new message (called from contact form)
-export function addMessage(message: Omit<Message, 'id' | 'date' | 'read'>) {
-  if (typeof window === 'undefined') return;
-  
-  try {
-    const messages = lsGet<Message[]>('admin_messages', []);
-    const newMessage: Message = {
-      ...message,
-      id: Date.now(),
-      date: new Date().toISOString(),
-      read: false,
-    };
-    
-    const updated = [newMessage, ...messages];
-    localStorage.setItem('admin_messages', JSON.stringify(updated));
-    
-    // Dispatch custom event for same-tab updates
-    window.dispatchEvent(new Event('admin_messages_updated'));
-    
-    console.log('✅ Message saved:', newMessage);
-    return true;
-  } catch (e) {
-    console.error('❌ Failed to save message:', e);
-    return false;
-  }
-}
+// ... existing code ...

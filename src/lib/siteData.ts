@@ -79,10 +79,10 @@ export type BlogPost = {
 export const defaultHero: HeroData = {
   name: 'Dipti Marandi',
   subtitle: 'Dedicated to Healthcare',
-  tagline: 'Professional Portfolio',
+  tagline: 'A Passion for Care',
   description:
     'Senior Staff Nurse, Dhaka Medical College & Hospital. Committed to providing advanced and compassionate patient care for over a decade.',
-  badge: 'Professional Portfolio',
+  badge: 'A Passion for Care',
   ctaPrimary: 'My Experience',
   ctaSecondary: 'Read My Story',
 };

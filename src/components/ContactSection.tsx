@@ -7,38 +7,37 @@ import { useContact, addMessage } from '@/lib/useSiteData';
 export default function ContactSection() {
   const contact = useContact();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     message: '',
   });
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<{ type: 'idle' | 'sending' | 'success' | 'error', message: string }>({ type: 'idle', message: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation
-    if (!formData.firstName || !formData.email || !formData.message) {
-      setStatus('error');
-      setTimeout(() => setStatus('idle'), 3000);
+    if (!formData.name || !formData.email || !formData.message) {
+      setStatus({ type: 'error', message: 'Please fill out all required fields.' });
+      setTimeout(() => setStatus({ type: 'idle', message: '' }), 3000);
       return;
     }
 
-    // Save message
-    const success = addMessage({
-      firstName: formData.firstName,
-      lastName: formData.lastName,
+    setStatus({ type: 'sending', message: 'Sending...' });
+
+    const { error } = await addMessage({
+      name: formData.name,
       email: formData.email,
       message: formData.message,
     });
 
-    if (success) {
-      setStatus('success');
-      setFormData({ firstName: '', lastName: '', email: '', message: '' });
-      setTimeout(() => setStatus('idle'), 5000);
+    if (error) {
+      setStatus({ type: 'error', message: error.message });
+      setTimeout(() => setStatus({ type: 'idle', message: '' }), 5000);
     } else {
-      setStatus('error');
-      setTimeout(() => setStatus('idle'), 3000);
+      setStatus({ type: 'success', message: 'Message sent successfully! Thank you.' });
+      setFormData({ name: '', email: '', message: '' });
+      setTimeout(() => setStatus({ type: 'idle', message: '' }), 5000);
     }
   };
 
@@ -111,90 +110,72 @@ export default function ContactSection() {
 
           {/* Right: Contact Form */}
           <div className="w-full lg:w-3/5 p-10 md:p-14">
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="firstName" className="text-sm font-semibold text-slate-700">First Name</label>
-                  <input 
-                    type="text" 
-                    id="firstName"
-                    value={formData.firstName}
+            <h3 className="text-3xl font-bold text-slate-800 mb-6">Send a Message</h3>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-slate-600 mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200"
+                    placeholder="Your Name"
                     required
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all"
-                    placeholder="John" 
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="lastName" className="text-sm font-semibold text-slate-700">Last Name</label>
-                  <input 
-                    type="text" 
-                    id="lastName"
-                    value={formData.lastName}
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-600 mb-2">Email Address</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all"
-                    placeholder="Doe" 
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200"
+                    placeholder="you@example.com"
+                    required
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-semibold text-slate-700">Email Address</label>
-                <input 
-                  type="email" 
-                  id="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all"
-                  placeholder="john@example.com" 
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-semibold text-slate-700">Your Message</label>
-                <textarea 
-                  id="message" 
-                  rows={4}
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium text-slate-600 mb-2">Message</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  rows={5}
                   value={formData.message}
                   onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200"
+                  placeholder="Your message..."
                   required
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all resize-none"
-                  placeholder="How can I help you?" 
-                />
+                ></textarea>
               </div>
-
-              <button 
-                type="submit"
-                disabled={status === 'success'}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-lg py-4 rounded-xl transition-colors shadow-lg shadow-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {status === 'success' ? '✓ Message Sent!' : 'Send Message'}
-              </button>
-
-              {/* Status Messages */}
-              <AnimatePresence>
-                {status === 'success' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="bg-teal-50 border border-teal-200 text-teal-700 px-4 py-3 rounded-xl text-sm"
-                  >
-                    ✓ Thank you! Your message has been sent successfully. I'll get back to you soon.
-                  </motion.div>
-                )}
-                {status === 'error' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm"
-                  >
-                    ✗ Please fill in all required fields.
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div className="flex items-center justify-between">
+                <button
+                  type="submit"
+                  disabled={status.type === 'sending'}
+                  className="px-8 py-3 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-300 disabled:bg-slate-400 disabled:cursor-not-allowed"
+                >
+                  {status.type === 'sending' ? 'Sending...' : 'Send Message'}
+                </button>
+                <AnimatePresence>
+                  {status.type !== 'idle' && status.type !== 'sending' && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className={`text-sm font-medium ${
+                        status.type === 'success' ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
+                      {status.message}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
             </form>
           </div>
 
