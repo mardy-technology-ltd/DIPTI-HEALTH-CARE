@@ -134,10 +134,14 @@ export async function POST(req: Request) {
 
     if (section === 'posts') {
       const rows = (Array.isArray(value) ? value : []).map((post: any) => {
-        const nextPost = { ...post };
-        if (!nextPost.slug && nextPost.title) {
-          nextPost.slug = generateSlug(nextPost.title);
+        const nextPost: Record<string, unknown> = { ...post };
+        if (!nextPost.slug && typeof nextPost.title === 'string') {
+          nextPost.slug = generateSlug(nextPost.title as string);
         }
+        // Remove fields that might not exist in the DB schema (e.g. images array, readTime)
+        if ('images' in nextPost) delete nextPost.images;
+        if ('readTime' in nextPost) delete nextPost.readTime;
+        if ('read_time' in nextPost) delete nextPost.read_time;
         return nextPost;
       });
 
