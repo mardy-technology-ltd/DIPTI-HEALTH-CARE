@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { AdminProvider, useAdmin } from '@/lib/adminContext';
 import { useMessages } from '@/lib/useSiteData';
 
@@ -30,18 +30,12 @@ function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
-  const messages = useMessages();
+  const { messages } = useMessages();
   const unreadCount = messages.filter(m => !m.read).length;
 
-  useEffect(() => {
-    if (sessionStorage.getItem('admin_auth') !== '1') {
-      router.replace('/admin');
-    }
-  }, [router]);
-
-  const logout = () => {
-    sessionStorage.removeItem('admin_auth');
-    router.push('/admin');
+  const logout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/admin/login');
   };
 
   return (

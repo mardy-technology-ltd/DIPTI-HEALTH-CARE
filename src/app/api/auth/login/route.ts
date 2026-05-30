@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     // data.session should contain access_token and refresh_token
     const session = (data as any).session;
     if (session && session.access_token) {
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       const maxAge = session.expires_at ? Math.max(60, session.expires_at - Math.floor(Date.now() / 1000)) : 60 * 60 * 24 * 7;
 
       // Set access and refresh tokens as httpOnly cookies
