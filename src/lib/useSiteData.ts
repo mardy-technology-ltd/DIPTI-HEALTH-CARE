@@ -149,35 +149,44 @@ export function usePosts() {
   return data;
 }
 
-// Messages Hook
 export function useMessages() {
   const [data, setData] = useState<Message[]>([]);
-  
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const messages = lsGet('admin_messages', []);
-    setData(messages);
+    const fetchMessages = async () => {
+      setLoading(true);
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    // Listen for storage events (cross-tab updates)
-    const handleStorage = () => {
-      const updated = lsGet('admin_messages', []);
-      setData(updated);
+      if (error) {
+        console.error('Error fetching messages:', error);
+      } else {
+        setData(messages || []);
+      }
+      setLoading(false);
     };
-    window.addEventListener('storage', handleStorage);
 
-    // Listen for custom events (same-tab updates)
-    const handleUpdate = () => {
-      const updated = lsGet('admin_messages', []);
-      setData(updated);
-    };
-    window.addEventListener('admin_messages_updated', handleUpdate);
+    fetchMessages();
+
+    // Listen for new messages
+    const channel = supabase
+      .channel('realtime messages')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload) => {
+          setData((prevMessages) => [payload.new as Message, ...prevMessages]);
+        }
+      )
+      .subscribe();
 
     return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('admin_messages_updated', handleUpdate);
+      supabase.removeChannel(channel);
     };
   }, []);
-  
-  return data;
-}
 
-// ... existing code ...
+  return { messages: data, loading };
+}

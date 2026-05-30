@@ -41,21 +41,10 @@ export type ContactData = {
 };
 export type Message = {
   id: number;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   message: string;
-  date: string;
-  read: boolean;
-};
-export type Message = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  message: string;
-  date: string;
-  read: boolean;
+  created_at: string;
 };
 
 export type BlogPost = {
