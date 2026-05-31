@@ -67,8 +67,8 @@ export default function StoryAdminPage() {
         <Field label="Paragraph 2" field="paragraph2" form={form} onChange={update} multiline />
         <Field label="Paragraph 3" field="paragraph3" form={form} onChange={update} multiline />
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Card Title"    field="cardTitle"    form={form} onChange={update} />
-          <Field label="Card Subtitle" field="cardSubtitle" form={form} onChange={update} />
+          <Field label="Card Title"    field="card_title"    form={form} onChange={update} />
+          <Field label="Card Subtitle" field="card_subtitle" form={form} onChange={update} />
         </div>
         <Field label="Image Quote" field="quote" form={form} onChange={update} multiline />
       </div>
@@ -84,8 +84,8 @@ export default function StoryAdminPage() {
           <div className="inline-flex items-center gap-3 bg-teal-50 px-4 py-3 rounded-xl border border-teal-100">
             <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center text-sm">♥</div>
             <div>
-              <p className="text-teal-900 font-bold text-sm">{form.cardTitle}</p>
-              <p className="text-teal-700 text-xs">{form.cardSubtitle}</p>
+              <p className="text-teal-900 font-bold text-sm">{form.card_title}</p>
+              <p className="text-teal-700 text-xs">{form.card_subtitle}</p>
             </div>
           </div>
           <blockquote className="border-l-4 border-teal-200 pl-4 text-slate-500 italic text-sm">{form.quote}</blockquote>

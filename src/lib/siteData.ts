@@ -29,8 +29,8 @@ export type StoryData = {
   paragraph1: string;
   paragraph2: string;
   paragraph3: string;
-  cardTitle: string;
-  cardSubtitle: string;
+  card_title: string;
+  card_subtitle: string;
   quote: string;
 };
 
@@ -112,8 +112,8 @@ export const defaultStory: StoryData = {
     'Over the past decade at Dhaka Medical College & Hospital, I have witnessed miracles, held hands through hardships, and learned that true healing goes far beyond medicine—it requires empathy, patience, and unwavering dedication.',
   paragraph3:
     'Every patient has a story, and as a Senior Staff Nurse, my role is to ensure their story continues with dignity and the highest standard of medical care.',
-  cardTitle: 'Compassionate Care',
-  cardSubtitle: 'Treating patients like family.',
+  card_title: 'Compassionate Care',
+  card_subtitle: 'Treating patients like family.',
   quote:
     '"Nursing is an art: and if it is to be made an art, it requires an exclusive devotion."',
 };

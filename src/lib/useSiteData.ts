@@ -69,13 +69,14 @@ export function useStory() {
       const { data: storyData, error } = await supabase
         .from('story')
         .select('*')
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching story data:', error);
         setData(lsGet('admin_story', defaultStory)); // Fallback
       } else if (storyData) {
-        setData(storyData);
+        setData({ ...defaultStory, ...storyData });
       }
     };
 

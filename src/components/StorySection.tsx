@@ -34,8 +34,8 @@ export default function StorySection() {
                   &hearts;
                 </div>
                 <div>
-                  <h4 className="text-teal-900 font-bold">{story.cardTitle}</h4>
-                  <p className="text-teal-700 text-sm">{story.cardSubtitle}</p>
+                  <h4 className="text-teal-900 font-bold">{story.card_title}</h4>
+                  <p className="text-teal-700 text-sm">{story.card_subtitle}</p>
                 </div>
               </div>
             </div>
