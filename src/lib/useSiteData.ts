@@ -151,43 +151,61 @@ export function usePosts() {
 }
 
 export function useMessages() {
-  const [data, setData] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<Message[] | null>(null);
+
+  const fetchMessages = async () => {
+    const { data: messagesData, error } = await supabase
+      .from('messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching messages:', error);
+      setData(lsGet('admin_messages', [])); // Fallback
+    } else if (messagesData) {
+      setData(messagesData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_messages', JSON.stringify(messagesData));
+      }
+    }
+  };
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      setLoading(true);
-      const { data: messages, error } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching messages:', error);
-      } else {
-        setData(messages || []);
-      }
-      setLoading(false);
-    };
-
     fetchMessages();
 
-    // Listen for new messages
-    const channel = supabase
-      .channel('realtime messages')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        (payload) => {
-          setData((prevMessages) => [payload.new as Message, ...prevMessages]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const handleUpdate = () => fetchMessages();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('admin_messages_updated', handleUpdate);
+      return () => window.removeEventListener('admin_messages_updated', handleUpdate);
+    }
   }, []);
 
-  return { messages: data, loading };
+  const markAsRead = (id: number) => {
+    if (typeof window === 'undefined' || !data) return;
+    
+    try {
+      const updated = data.map(m => 
+        m.id === id ? { ...m, read: true } : m
+      );
+      localStorage.setItem('admin_messages', JSON.stringify(updated));
+      window.dispatchEvent(new Event('admin_messages_updated'));
+    } catch (e) {
+      console.error('Failed to mark as read:', e);
+    }
+  };
+
+  const deleteMessage = (id: number) => {
+    if (typeof window === 'undefined' || !data) return;
+    if (!confirm('Are you sure you want to delete this message?')) return;
+    
+    try {
+      const updated = data.filter(m => m.id !== id);
+      localStorage.setItem('admin_messages', JSON.stringify(updated));
+      window.dispatchEvent(new Event('admin_messages_updated'));
+    } catch (e) {
+      console.error('Failed to delete message:', e);
+    }
+  };
+
+  return { messages: data, markAsRead, deleteMessage };
 }

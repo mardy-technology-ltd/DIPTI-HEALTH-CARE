@@ -31,7 +31,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const { messages } = useMessages();
-  const unreadCount = messages.filter(m => !m.read).length;
+  const unreadCount = (messages || []).filter(m => !m.read).length;
 
   const logout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });

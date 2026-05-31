@@ -6,18 +6,19 @@ import { useMessages } from '@/lib/useSiteData';
 import { Message } from '@/lib/siteData';
 
 export default function MessagesPage() {
-  const messages = useMessages();
+  const { messages, markAsRead, deleteMessage } = useMessages();
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
-  const filtered = messages.filter(m => {
+  const filtered = (messages || []).filter(m => {
     if (filter === 'unread') return !m.read;
     if (filter === 'read') return m.read;
     return true;
   });
 
-  const unreadCount = messages.filter(m => !m.read).length;
+  const unreadCount = (messages || []).filter(m => !m.read).length;
 
+  /*
   const markAsRead = (id: number) => {
     if (typeof window === 'undefined') return;
     
@@ -44,6 +45,7 @@ export default function MessagesPage() {
       console.error('Failed to delete message:', e);
     }
   };
+  */
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -73,7 +75,7 @@ export default function MessagesPage() {
               {unreadCount} Unread
             </span>
             <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-sm font-semibold">
-              {messages.length} Total
+              {(messages || []).length} Total
             </span>
           </div>
         </div>
